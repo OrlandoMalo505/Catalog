@@ -11,12 +11,13 @@ namespace Catalog.Controllers
     public class ItemsController : ControllerBase
     {
 
-        private readonly InMemItemsRepository _repository;
+        private readonly IInMemItemsRepository _repository;
 
-        public ItemsController( )
+        public ItemsController(IInMemItemsRepository repository)
         {
-            _repository = new InMemItemsRepository();
+            _repository = repository;
         }
+
 
         [HttpGet]
         public IEnumerable<Item> GetItems()
