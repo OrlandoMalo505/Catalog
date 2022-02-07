@@ -1,0 +1,51 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-deployment
+spec:
+  selector:
+    matchLabels:
+      app: catalog
+  template:
+    metadata:
+      labels:
+        app: catalog
+    spec:
+      containers:
+        - name: catalog
+          image: orlandomalo/catalog:v2
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: MongoDbSettings__Host
+              value: mongodb-service
+            - name: MongodbSettings__Password
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-secrets
+                  key: mongodb-password
+          livenessProbe:
+            httpGet:
+              path: /healthchecks/live
+              port: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthchecks/ready
+              port: 8081
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: catalog
+  ports:
+    - port: 8081
+      targetPort: 80
