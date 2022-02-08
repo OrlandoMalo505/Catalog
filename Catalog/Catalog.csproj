@@ -1,11 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-  </ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+		<UserSecretsId>53a45f79-c355-491e-91b1-9dfdb1a17762</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	</PropertyGroup>
+	<ItemGroup>
+		
+		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="5.0.0" />
+		
+		<PackageReference Include="KubernetesClient" Version="7.0.10" />
+		
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
+		
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
+		
+		<PackageReference Include="MongoDB.Driver" Version="2.14.1" />
+		
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="..\.dockerignore" />
+	</ItemGroup>
 </Project>
