@@ -1,4 +1,4 @@
-﻿using Catalog.Dtos;
+﻿
 using Catalog.Entities;
 using Catalog.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Catalog.Dtos;
 
 namespace Catalog.Controllers
 {
@@ -26,14 +27,21 @@ namespace Catalog.Controllers
 
 
         [HttpGet]
-        public async Task<IEnumerable<ItemDto>> GetItemsAsync()
+        public async Task<IEnumerable<ItemDto>> GetItemsAsync(string name = null)
         {
-            var items= (await _repository.GetItemsAsync()).Select(item => item.AsDto());
+            var items = (await _repository.GetItemsAsync())
+                        .Select(item => item.AsDto());
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                items = items.Where(item => item.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            }
 
             _logger.LogInformation($"{DateTime.UtcNow.ToString("hh:mm:ss")}: Retrieved {items.Count()} items");
 
             return items;
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ItemDto>> GetItemAsync(Guid id)
@@ -54,33 +62,31 @@ namespace Catalog.Controllers
             {
                 Id = Guid.NewGuid(),
                 Name = itemDto.Name,
+                Description = itemDto.Description,
                 Price = itemDto.Price,
                 CreatedDate = DateTimeOffset.UtcNow
             };
+
             await _repository.CreateItemAsync(item);
 
             return CreatedAtAction(nameof(GetItemAsync), new { id = item.Id }, item.AsDto());
-
 
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateItemAsync(Guid id, UpdateItemDto itemDto)
         {
-            Item existingItem = await _repository.GetItemByIdAsync(id);
+            var existingItem = await _repository.GetItemByIdAsync(id);
 
-            if(existingItem is null)
+            if (existingItem is null)
             {
                 return NotFound();
             }
 
-            var updatedItem = existingItem with
-            {
-                Name = itemDto.Name,
-                Price = itemDto.Price
-            };
+            existingItem.Name = itemDto.Name;
+            existingItem.Price = itemDto.Price;
 
-            await _repository.UpdateItemAsync(updatedItem);
+            await _repository.UpdateItemAsync(existingItem);
 
             return NoContent();
 

@@ -1,6 +1,5 @@
 ﻿using Castle.Core.Logging;
 using Catalog.Controllers;
-using Catalog.Dtos;
 using Catalog.Entities;
 using Catalog.Repositories;
 using FluentAssertions;
@@ -13,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using static Catalog.Dtos;
 
 namespace Catalog.Tests
 {
@@ -64,6 +64,33 @@ namespace Catalog.Tests
         }
 
         [Fact]
+        public async Task GetItemsAsync_WithMatchingItems_ReturnsMatchingItems()
+        {
+            // Arrange
+            var allItems = new[]
+            {
+                new Item(){ Name = "Potion"},
+                new Item(){ Name = "Antidote"},
+                new Item(){ Name = "Hi-Potion"}
+            };
+
+            var nameToMatch = "Potion";
+
+            repositoryStub.Setup(repo => repo.GetItemsAsync())
+                .ReturnsAsync(allItems);
+
+            var controller = new ItemsController(repositoryStub.Object, loggerStub.Object);
+
+            // Act
+            IEnumerable<ItemDto> foundItems = await controller.GetItemsAsync(nameToMatch);
+
+            // Assert
+            foundItems.Should().OnlyContain(
+                item => item.Name == allItems[0].Name || item.Name == allItems[2].Name
+            );
+        }
+
+        [Fact]
         public async Task GetItemsAsync_WithExistingItems_ReturnAllItems()
         {
             //Arrange
@@ -84,11 +111,8 @@ namespace Catalog.Tests
         public async Task CreateItemAsync_WithItemToCreate_ReturnCreatedItem()
         {
             //Arrange
-            var itemToCreate = new CreateItemDto()
-            {
-                Name = Guid.NewGuid().ToString(),
-                Price = rand.Next(1000)
-            };
+            var itemToCreate = new CreateItemDto(Guid.NewGuid().ToString(), Guid.NewGuid().ToString(),rand.Next(1000));
+            
             var controller = new ItemsController(repositoryStub.Object, loggerStub.Object);
 
             //Act
@@ -114,11 +138,9 @@ namespace Catalog.Tests
                 .ReturnsAsync(existingItem);
 
             var itemId = existingItem.Id;
-            var itemToUpdate = new UpdateItemDto
-            {
-                Name = Guid.NewGuid().ToString(),
-                Price = rand.Next(1000)
-            };
+            var itemToUpdate = new UpdateItemDto(Guid.NewGuid().ToString(), Guid.NewGuid().ToString(),
+                rand.Next(1000));
+           
   
             var controller = new ItemsController(repositoryStub.Object, loggerStub.Object);
 
